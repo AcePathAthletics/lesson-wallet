@@ -1,0 +1,46 @@
+{
+  "name": "lesson-wallet",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The simplest lesson credit wallet — attendance & credit tracking for independent teachers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:watch": "node --test --watch tests/*.test.js",
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
+    "test:db": "node --test tests/db/*.db.test.js",
+    "test:all": "npm test && npm run test:db"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~3.2.3",
+    "@opentelemetry/api": "^1.9.1",
+    "@react-navigation/bottom-tabs": "^6.5.0",
+    "@react-navigation/native": "^6.1.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@types/react": "~18.2.79",
+    "expo": "~51.0.0",
+    "expo-auth-session": "~5.5.0",
+    "expo-calendar": "~13.0.0",
+    "expo-localization": "~15.0.3",
+    "expo-notifications": "~0.28.0",
+    "expo-status-bar": "~1.12.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-url-polyfill": "^2.0.0",
+    "react-native-web": "~0.19.10",
+    "typescript": "~5.3.3"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "supabase": "^2.111.0"
+  }
+}

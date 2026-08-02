@@ -1,0 +1,1525 @@
+<div id="app-root"></div>
+<style>
+  #app-root {
+    --ink-green: #1F3A2E;
+    --ink-green-deep: #14261D;
+    --ticket: #EFE7D3;
+    --ticket-shadow: #D9CDA9;
+    --stamp-red: #B23A2E;
+    --gold: #C9A24B;
+    --gold-soft: #E7CE8B;
+    --text-dark: #1B241C;
+    --text-fade: #6B6250;
+    --font-display: 'DM Serif Display', 'Songti SC', serif;
+    --font-body: 'IBM Plex Sans', 'PingFang SC', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    font-family: var(--font-body);
+    background: transparent;
+    color: var(--text-dark);
+    display: flex;
+    justify-content: center;
+    padding: 24px 12px;
+  }
+
+  #app-root * { box-sizing: border-box; }
+
+  .phone {
+    width: 380px;
+    max-width: 100%;
+    background: var(--ink-green);
+    border-radius: 36px;
+    padding: 14px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.04);
+    position: relative;
+  }
+
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 26px; left: 50%; transform: translateX(-50%);
+    width: 70px; height: 5px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 3px;
+  }
+
+  .screen {
+    background: var(--ink-green-deep);
+    border-radius: 26px;
+    overflow: hidden;
+    height: 720px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(201,162,75,0.08), transparent 40%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  .topbar {
+    padding: 30px 20px 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .topbar .word {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--ticket);
+    letter-spacing: 0.5px;
+  }
+  .topbar .word .dot { color: var(--gold); }
+
+  .lang-toggle {
+    display: flex;
+    background: rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .lang-toggle button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 5px 10px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: rgba(239,231,211,0.55);
+    cursor: pointer;
+  }
+  .lang-toggle button.active {
+    background: var(--gold);
+    color: var(--ink-green-deep);
+    font-weight: 600;
+  }
+
+  .role-toggle {
+    display: flex;
+    margin: 0 20px 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 3px;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .role-toggle button {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 8px 6px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: rgba(239,231,211,0.45);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .role-toggle button.active {
+    background: var(--ink-green);
+    color: var(--ticket);
+    box-shadow: inset 0 0 0 1px rgba(201,162,75,0.5);
+  }
+  .role-toggle button .role-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gold);
+    opacity: 0;
+  }
+  .role-toggle button.active .role-dot { opacity: 1; }
+
+  .subline {
+    padding: 0 20px 16px;
+    color: rgba(239,231,211,0.5);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    flex-shrink: 0;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+  .content::-webkit-scrollbar { width: 0; }
+
+  /* ---- Ticket card ---- */
+  .ticket {
+    background: var(--ticket);
+    border-radius: 14px;
+    margin-bottom: 14px;
+    display: flex;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.45);
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+    transition: transform 0.15s ease;
+  }
+  .ticket:active { transform: scale(0.985); }
+
+  .ticket-main {
+    flex: 1;
+    padding: 16px 14px 16px 18px;
+    position: relative;
+  }
+
+  .ticket-perf {
+    width: 0;
+    position: relative;
+    border-left: 2px dashed var(--ticket-shadow);
+  }
+  .ticket-perf::before, .ticket-perf::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 16px; height: 16px;
+    background: var(--ink-green-deep);
+    border-radius: 50%;
+  }
+  .ticket-perf::before { top: -8px; }
+  .ticket-perf::after { bottom: -8px; }
+
+  .ticket-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--stamp-red);
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .ticket-name {
+    font-family: var(--font-display);
+    font-size: 19px;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+  }
+  .ticket-course {
+    font-size: 12.5px;
+    color: var(--text-fade);
+  }
+  .ticket-remaining {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-fade);
+    margin-top: 8px;
+  }
+  .ticket-remaining b { color: var(--text-dark); font-size: 13px; }
+
+  .ticket-action {
+    width: 92px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+  .stamp-btn {
+    width: 100%;
+    height: 56px;
+    border-radius: 10px;
+    border: 1.5px solid var(--ink-green);
+    background: transparent;
+    color: var(--ink-green);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.3;
+  }
+  .stamp-btn:hover { background: var(--ink-green); color: var(--ticket); }
+
+  .stamp-mark {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--stamp-red);
+    border: 2px solid var(--stamp-red);
+    border-radius: 6px;
+    padding: 2px 6px;
+    transform: rotate(-10deg) scale(0);
+    opacity: 0;
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+  .stamp-mark.show {
+    animation: stampIn 0.45s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes stampIn {
+    0% { transform: rotate(-10deg) scale(2.2); opacity: 0; }
+    60% { transform: rotate(-10deg) scale(0.9); opacity: 1; }
+    100% { transform: rotate(-10deg) scale(1); opacity: 1; }
+  }
+  .ticket.done { opacity: 0.55; }
+  .ticket.done .ticket-name { text-decoration: line-through; text-decoration-color: var(--stamp-red); }
+
+  /* ---- Calendar add mini buttons ---- */
+  .cal-mini-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 9px;
+  }
+  .cal-mini {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.3px;
+    border: 1px solid var(--ticket-shadow);
+    background: rgba(255,255,255,0.5);
+    color: var(--text-fade);
+    border-radius: 7px;
+    padding: 4px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .cal-mini:hover { border-color: var(--ink-green); color: var(--ink-green); }
+  .cal-mini .dot-g { color: #4285F4; }
+  .cal-mini .dot-a { color: #555; }
+
+  /* ---- Profile / Sync ---- */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 4px 4px 20px;
+  }
+  .profile-avatar {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink-green-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 21px;
+  }
+  .profile-name { font-family: var(--font-display); font-size: 19px; color: var(--ticket); }
+  .profile-role { font-family: var(--font-mono); font-size: 10.5px; color: var(--gold-soft); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .sync-card {
+    background: var(--ticket);
+    border-radius: 14px;
+    padding: 6px 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.4);
+  }
+  .sync-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(31,58,46,0.08);
+  }
+  .sync-row:last-child { border-bottom: none; }
+  .sync-icon { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+  .sync-mid { flex: 1; }
+  .sync-name { font-size: 14px; color: var(--text-dark); font-weight: 600; }
+  .sync-status { font-family: var(--font-mono); font-size: 10.5px; margin-top: 2px; }
+  .sync-status.on { color: #2E7D4F; }
+  .sync-status.off { color: var(--text-fade); }
+  .connect-btn {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.3px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--ink-green);
+    background: transparent;
+    color: var(--ink-green);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .connect-btn.on { background: var(--ink-green); color: var(--ticket); }
+
+  .sync-note {
+    font-size: 11.5px;
+    color: rgba(239,231,211,0.4);
+    font-family: var(--font-mono);
+    line-height: 1.6;
+    padding: 2px 6px 10px;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--gold-soft);
+    margin: 18px 4px 10px;
+    text-transform: uppercase;
+  }
+  .section-label:first-child { margin-top: 4px; }
+
+  .empty-note {
+    color: rgba(239,231,211,0.4);
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+    padding: 8px 4px 20px;
+  }
+
+  /* ---- Student list ---- */
+  .student-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 6px;
+    border-bottom: 1px solid rgba(239,231,211,0.08);
+    cursor: pointer;
+  }
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--ink-green-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .student-info { flex: 1; min-width: 0; }
+  .student-name {
+    font-family: var(--font-display);
+    color: var(--ticket);
+    font-size: 16px;
+  }
+  .student-courses {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-green-deep);
+    background: var(--gold-soft);
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .chev { color: rgba(239,231,211,0.3); font-size: 18px; }
+
+  /* ---- Student wallet ---- */
+  .hello {
+    font-family: var(--font-display);
+    font-size: 21px;
+    color: var(--ticket);
+    margin: 4px 4px 16px;
+  }
+  .hello span { color: var(--gold); }
+
+  .credit-card {
+    background: var(--ticket);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.4);
+  }
+  .credit-icon { font-size: 26px; flex-shrink: 0; }
+  .credit-mid { flex: 1; }
+  .credit-course { font-family: var(--font-display); font-size: 16.5px; color: var(--text-dark); }
+  .credit-teacher { font-size: 11px; color: var(--text-fade); margin-top: 2px; }
+  .credit-count { text-align: right; }
+  .credit-count b { display: block; font-family: var(--font-mono); font-size: 22px; color: var(--stamp-red); }
+  .credit-count span { font-size: 9px; color: var(--text-fade); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .upcoming-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 6px;
+    border-bottom: 1px dashed rgba(239,231,211,0.1);
+  }
+  .upcoming-date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--gold-soft);
+    width: 58px;
+    flex-shrink: 0;
+  }
+  .upcoming-mid { flex: 1; }
+  .upcoming-course { color: var(--ticket); font-size: 14px; }
+  .upcoming-teacher { color: rgba(239,231,211,0.45); font-size: 11.5px; margin-top: 2px; }
+
+  /* ---- History ---- */
+  .hist-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px dashed rgba(239,231,211,0.1);
+  }
+  .hist-date {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--gold-soft);
+    width: 52px;
+    flex-shrink: 0;
+  }
+  .hist-mid { flex: 1; }
+  .hist-name { color: var(--ticket); font-size: 13.5px; }
+  .hist-course { color: rgba(239,231,211,0.45); font-size: 11.5px; }
+  .hist-badge {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--stamp-red);
+    border: 1px solid var(--stamp-red);
+    border-radius: 5px;
+    padding: 2px 5px;
+    transform: rotate(-6deg);
+  }
+
+  /* ---- Tab bar ---- */
+  .tabbar {
+    display: flex;
+    border-top: 1px solid rgba(239,231,211,0.08);
+    background: var(--ink-green-deep);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 4px 14px;
+    cursor: pointer;
+    color: rgba(239,231,211,0.35);
+  }
+  .tab.active { color: var(--gold); }
+  .tab-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+  .tab-label { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.5px; }
+
+  /* ---- Login screen ---- */
+  .login-wrap {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 26px;
+  }
+  .login-logo {
+    font-family: var(--font-display);
+    font-size: 30px;
+    color: var(--ticket);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .login-logo .dot { color: var(--gold); }
+  .login-tag {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(239,231,211,0.45);
+    margin-bottom: 34px;
+  }
+  .google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--ticket);
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #3c3c3c;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  .google-btn:disabled { opacity: 0.7; cursor: default; }
+  .google-g { width: 18px; height: 18px; flex-shrink: 0; }
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 18px;
+    color: rgba(239,231,211,0.3);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+  .login-divider::before, .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(239,231,211,0.15);
+  }
+  .login-field {
+    width: 100%;
+    background: rgba(239,231,211,0.08);
+    border: 1px solid rgba(239,231,211,0.15);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--ticket);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+  .login-field::placeholder { color: rgba(239,231,211,0.35); }
+  .login-btn {
+    width: 100%;
+    background: var(--stamp-red);
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    color: var(--ticket);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .login-footnote {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(239,231,211,0.35);
+    margin-top: 22px;
+    font-family: var(--font-mono);
+  }
+  .role-pick {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+    justify-content: center;
+  }
+  .role-pick button {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(239,231,211,0.25);
+    background: transparent;
+    color: rgba(239,231,211,0.55);
+    cursor: pointer;
+  }
+  .role-pick button.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink-green-deep);
+    font-weight: 600;
+  }
+
+  /* ---- Import from calendar sheet ---- */
+  .import-list { max-height: 340px; overflow-y: auto; margin-bottom: 14px; }
+  .import-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 4px;
+    border-bottom: 1px solid rgba(31,58,46,0.08);
+  }
+  .import-row.skip { opacity: 0.4; }
+  .import-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--ink-green);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink-green);
+  }
+  .import-check.checked { background: var(--ink-green); color: var(--ticket); }
+  .import-mid { flex: 1; }
+  .import-title { font-size: 13.5px; color: var(--text-dark); }
+  .import-time { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-fade); margin-top: 2px; }
+  .import-tag {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    letter-spacing: 0.3px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .import-tag.lesson { background: rgba(46,125,79,0.15); color: #2E7D4F; }
+  .import-tag.other { background: rgba(0,0,0,0.06); color: var(--text-fade); }
+  .import-btn-row { display: flex; gap: 8px; }
+  .sync-link {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: transparent;
+    border: 1.5px dashed var(--ticket-shadow);
+    border-radius: 12px;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-green);
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  .import-badge {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    background: rgba(31,58,46,0.5);
+    color: var(--gold-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+
+  /* ---- Floating log button ---- */
+  .fab {
+    position: absolute;
+    right: 18px; bottom: 78px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--stamp-red);
+    color: var(--ticket);
+    border: none;
+    font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 24px -6px rgba(178,58,46,0.55), 0 0 0 4px var(--ink-green-deep);
+    cursor: pointer;
+    z-index: 15;
+    line-height: 1;
+  }
+  .fab:active { transform: scale(0.94); }
+
+  .log-step-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .log-step-sub { font-size: 12px; color: var(--text-fade); margin-bottom: 16px; }
+  .log-pick-list { max-height: 320px; overflow-y: auto; margin-bottom: 6px; }
+  .log-pick-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 6px;
+    border-bottom: 1px solid rgba(31,58,46,0.08);
+    cursor: pointer;
+  }
+  .log-pick-row .avatar { width: 38px; height: 38px; font-size: 15px; }
+  .log-pick-name { font-family: var(--font-display); font-size: 15px; color: var(--text-dark); }
+  .log-pick-sub { font-size: 11px; color: var(--text-fade); margin-top: 1px; }
+  .log-course-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 14px;
+    border: 1.5px solid var(--ticket-shadow);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .log-course-chip .left-count { font-family: var(--font-mono); font-size: 12px; color: var(--text-fade); }
+  .log-back {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-fade);
+    background: none; border: none;
+    padding: 0 0 14px;
+    cursor: pointer;
+  }
+  .log-summary {
+    background: rgba(31,58,46,0.06);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .log-summary-name { font-family: var(--font-display); font-size: 17px; }
+  .log-summary-course { font-size: 12.5px; color: var(--text-fade); margin-top: 2px; }
+  .logged-badge {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    background: rgba(178,58,46,0.12);
+    color: var(--stamp-red);
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+  }
+
+  /* ---- Modal (course detail) ---- */
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: flex-end;
+    z-index: 20;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--ticket);
+    width: 100%;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 22px 26px;
+    transform: translateY(20px);
+    transition: transform 0.25s cubic-bezier(.2,.9,.3,1);
+  }
+  .modal-backdrop.open .modal-sheet { transform: translateY(0); }
+  .modal-handle {
+    width: 36px; height: 4px; background: var(--ticket-shadow);
+    border-radius: 3px; margin: 0 auto 16px;
+  }
+  .modal-title { font-family: var(--font-display); font-size: 22px; margin-bottom: 2px; }
+  .modal-sub { font-size: 12px; color: var(--text-fade); margin-bottom: 18px; }
+  .modal-stats {
+    display: flex; justify-content: space-between;
+    background: rgba(31,58,46,0.06);
+    border-radius: 12px; padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .stat { text-align: center; }
+  .stat b { display: block; font-family: var(--font-mono); font-size: 20px; color: var(--ink-green); }
+  .stat span { font-size: 10px; color: var(--text-fade); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; }
+  .modal-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: var(--stamp-red);
+    color: var(--ticket);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .modal-close {
+    width: 100%; text-align: center;
+    color: var(--text-fade);
+    font-size: 12px;
+    background: none; border: none;
+    padding: 6px; cursor: pointer;
+  }
+</style>
+
+<script>
+(function(){
+  const T = {
+    en: {
+      brand: 'Lesson', brandDot: 'Wallet',
+      today: "Today", noneLeft: "No more lessons today — nicely done.",
+      complete: "COMPLETE\nLESSON",
+      stamped: "DONE",
+      remaining: "Remaining",
+      students: "Students", history: "History", home: "Home",
+      studentsLabel: "ALL STUDENTS",
+      historyLabel: "RECENT ATTENDANCE",
+      take: "Take Lesson", close: "Close",
+      purchased: "Purchased", used: "Used", left: "Left",
+      completedTag: "DONE",
+      roleTeacher: "Teacher", roleStudent: "Student",
+      hello: "Hello, ", lessonsLabel: "MY LESSONS",
+      lessonsTab: "Lessons",
+      upcomingLabel: "UPCOMING",
+      myHistoryLabel: "MY HISTORY",
+      remainingUnit: "left",
+      subTeacher: "Fri, Aug 1 · 5 sec to log a lesson",
+      subStudent: "Fri, Aug 1 · your credits at a glance",
+      profile: "Profile",
+      calendarSync: "CALENDAR SYNC",
+      google: "Google Calendar", apple: "Apple Calendar",
+      connected: "Connected", notConnected: "Not connected",
+      connect: "Connect", disconnect: "Disconnect",
+      syncNote: "When connected, new and cancelled lessons push to your calendar automatically. You can also add any single lesson below.",
+      addGoogle: "+ Google", addApple: "+ Apple",
+      role_teacher_name: "Coach John",
+      role_student_name: "Amy",
+      loginTag: "The simplest lesson credit wallet.",
+      continueGoogle: "Continue with Google",
+      connectingGoogle: "Connecting…",
+      orEmail: "or continue with email",
+      emailPh: "Email address",
+      passwordPh: "Password",
+      logIn: "Log In",
+      loginFootnote: "By continuing you agree to LessonTap's Terms.",
+      chooseRole: "I am a…",
+      importBtn: "Import Lessons from Calendar",
+      importTitle: "Import from Google Calendar",
+      importSub: "We found these events on your connected calendar. Select the ones that are lessons.",
+      lessonTag: "LESSON", otherTag: "OTHER",
+      importSelected: "Import Selected",
+      skip: "Skip",
+      logOut: "Log out",
+      imported: "Imported",
+      logLessonTitle: "Log a Lesson",
+      logStep1Title: "Who's the lesson for?",
+      logStep1Sub: "Log a lesson that wasn't on today's list.",
+      logStep2Title: "Which course?",
+      logStep2Sub: "Select the course to deduct a credit from.",
+      logStep3Title: "Confirm & log",
+      logConfirmBtn: "Log Lesson Now",
+      logDoneToast: "Lesson logged",
+      loggedBadge: "LOGGED",
+      back: "Back",
+      leftUnit: "left",
+    },
+    zh: {
+      brand: '课时', brandDot: '钱包',
+      today: "今天", noneLeft: "今天的课都上完了，辛苦了。",
+      complete: "完成\n课程",
+      stamped: "已完成",
+      remaining: "剩余",
+      students: "学生", history: "记录", home: "首页",
+      studentsLabel: "全部学生",
+      historyLabel: "近期出勤",
+      take: "扣一节课", close: "关闭",
+      purchased: "已购", used: "已用", left: "剩余",
+      completedTag: "完成",
+      roleTeacher: "老师", roleStudent: "学生",
+      hello: "你好，", lessonsLabel: "我的课程",
+      lessonsTab: "课程",
+      upcomingLabel: "即将上课",
+      myHistoryLabel: "我的记录",
+      remainingUnit: "节",
+      subTeacher: "8月1日 周五 · 5秒完成一次消课",
+      subStudent: "8月1日 周五 · 一眼看清剩余课时",
+      profile: "我的",
+      calendarSync: "日历同步",
+      google: "Google 日历", apple: "Apple 日历",
+      connected: "已连接", notConnected: "未连接",
+      connect: "连接", disconnect: "断开",
+      syncNote: "连接后，新增或取消的课程会自动同步到你的日历。你也可以在下方为单节课添加日历提醒。",
+      addGoogle: "+ Google", addApple: "+ Apple",
+      role_teacher_name: "John 老师",
+      role_student_name: "Amy",
+      loginTag: "最简单的课时钱包。",
+      continueGoogle: "使用 Google 继续",
+      connectingGoogle: "连接中…",
+      orEmail: "或使用邮箱继续",
+      emailPh: "邮箱地址",
+      passwordPh: "密码",
+      logIn: "登录",
+      loginFootnote: "继续即表示你同意 LessonTap 的服务条款。",
+      chooseRole: "我的身份是…",
+      importBtn: "从日历导入课程",
+      importTitle: "从 Google 日历导入",
+      importSub: "我们在你连接的日历中找到以下事件，请选择其中属于课程的项目。",
+      lessonTag: "课程", otherTag: "其他",
+      importSelected: "导入所选",
+      skip: "跳过",
+      logOut: "退出登录",
+      imported: "已导入",
+      logLessonTitle: "记一节课",
+      logStep1Title: "这节课是谁的？",
+      logStep1Sub: "记录一节不在今天列表里的课程。",
+      logStep2Title: "哪门课程？",
+      logStep2Sub: "选择要扣除课时的课程。",
+      logStep3Title: "确认并记录",
+      logConfirmBtn: "立即记录",
+      logDoneToast: "课程已记录",
+      loggedBadge: "已记录",
+      back: "返回",
+      leftUnit: "节剩余",
+    }
+  };
+
+  const state = {
+    lang: 'en',
+    role: 'teacher',
+    loggedIn: false,
+    googleAuthLoading: false,
+    tab: 'home',
+    studentTab: 'home',
+    currentStudentId: 1,
+    modalCourse: null,
+    sync: { google: false, apple: false },
+    showLog: false,
+    logStep: 'student',
+    logStudentId: null,
+    logCourseName: null,
+    showImport: false,
+    importEvents: [
+      { id:1, title:'Amy - Tennis', time:'09:00', date:'Aug 1', isLesson:true, selected:true },
+      { id:2, title:'Team lunch', time:'12:00', date:'Aug 1', isLesson:false, selected:false },
+      { id:3, title:'Jack - Piano', time:'15:30', date:'Aug 1', isLesson:true, selected:true },
+      { id:4, title:'Dentist appointment', time:'17:00', date:'Aug 1', isLesson:false, selected:false },
+      { id:5, title:'Leo - Math', time:'18:00', date:'Aug 1', isLesson:true, selected:true },
+    ],
+    upcoming: [
+      { date:'Aug 4', time:'09:00', course:'Tennis', courseZh:'网球', teacher:'Coach John', icon:'🎾' },
+      { date:'Aug 6', time:'09:00', course:'Tennis', courseZh:'网球', teacher:'Coach John', icon:'🎾' },
+      { date:'Aug 8', time:'16:00', course:'Fitness', courseZh:'健身', teacher:'Coach John', icon:'🏋️' },
+    ],
+    lessons: [
+      { id:1, time:'09:00', name:'Amy', nameZh:'Amy', course:'Tennis', courseZh:'网球', icon:'🎾', remaining:8, done:false },
+      { id:2, time:'10:30', name:'Jack', nameZh:'Jack', course:'Piano', courseZh:'钢琴', icon:'🎹', remaining:12, done:false },
+      { id:3, time:'15:00', name:'Mia', nameZh:'Mia', course:'Swimming', courseZh:'游泳', icon:'🏊', remaining:2, done:false },
+    ],
+    students: [
+      { id:1, name:'Amy', courses:[{c:'Tennis', cZh:'网球', left:8},{c:'Fitness', cZh:'健身', left:15}] },
+      { id:2, name:'Jack', courses:[{c:'Piano', cZh:'钢琴', left:12}] },
+      { id:3, name:'Mia', courses:[{c:'Swimming', cZh:'游泳', left:2}] },
+      { id:4, name:'Leo', courses:[{c:'Math', cZh:'数学', left:6}] },
+    ],
+    history: [
+      { date:'Jul 28', name:'Amy', course:'Tennis', courseZh:'网球' },
+      { date:'Jul 27', name:'Jack', course:'Piano', courseZh:'钢琴' },
+      { date:'Jul 25', name:'Mia', course:'Swimming', courseZh:'游泳' },
+      { date:'Jul 24', name:'Amy', course:'Tennis', courseZh:'网球' },
+      { date:'Jul 22', name:'Leo', course:'Math', courseZh:'数学' },
+    ],
+  };
+
+  function t(){ return T[state.lang]; }
+
+  function completeLesson(id){
+    const l = state.lessons.find(x=>x.id===id);
+    if (!l || l.done) return;
+    l.done = true;
+    l.remaining = Math.max(0, l.remaining - 1);
+    state.history.unshift({ date:'Aug 1', name:l.name, course:l.course, courseZh:l.courseZh });
+    render();
+  }
+
+  function openCourse(studentName, course){
+    state.modalCourse = { studentName, ...course, purchased: course.left + 12, used: 12 };
+    render();
+  }
+  function closeModal(){ state.modalCourse = null; render(); }
+  function takeLesson(){
+    if (!state.modalCourse) return;
+    state.modalCourse.left = Math.max(0, state.modalCourse.left - 1);
+    state.modalCourse.used += 1;
+    const s = state.students.find(s => s.name === state.modalCourse.studentName);
+    if (s) {
+      const c = s.courses.find(c => c.c === state.modalCourse.c);
+      if (c) c.left = state.modalCourse.left;
+    }
+    render();
+  }
+
+  function esc(s){ return s; }
+
+  const pad = n => String(n).padStart(2,'0');
+  function fmtStamp(d){
+    return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(d.getHours())+pad(d.getMinutes())+'00';
+  }
+  function toDateTime(dateStr, timeStr){
+    // dateStr like "Aug 4", timeStr like "09:00" — assumes current year 2026
+    return new Date(`${dateStr}, 2026 ${timeStr}`);
+  }
+  function addToGoogleCalendar(title, dateStr, timeStr, details){
+    const start = toDateTime(dateStr, timeStr);
+    const end = new Date(start.getTime() + 60*60*1000);
+    const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+      + '&text=' + encodeURIComponent(title)
+      + '&dates=' + fmtStamp(start) + '/' + fmtStamp(end)
+      + '&details=' + encodeURIComponent(details || '');
+    window.open(url, '_blank');
+  }
+  function addToAppleCalendar(title, dateStr, timeStr, details){
+    const start = toDateTime(dateStr, timeStr);
+    const end = new Date(start.getTime() + 60*60*1000);
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LessonWallet//EN','BEGIN:VEVENT',
+      'UID:' + Date.now() + '@lessontap',
+      'DTSTAMP:' + fmtStamp(new Date()),
+      'DTSTART:' + fmtStamp(start),
+      'DTEND:' + fmtStamp(end),
+      'SUMMARY:' + title,
+      'DESCRIPTION:' + (details || ''),
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = title.replace(/\s+/g,'_') + '.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }
+
+  const GOOGLE_G_SVG = `<svg class="google-g" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 16.1 3 9.3 7.5 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.6c-2.1 1.5-4.7 2.4-7.6 2.4-5.2 0-9.7-3.3-11.3-8l-6.5 5C9.2 40.4 16 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.6 5.6C41.9 36 45 30.6 45 24c0-1.2-.1-2.4-.4-3.5z"/></svg>`;
+
+  function renderLogin(){
+    const T_ = t();
+    return `
+      <div class="login-wrap">
+        <div class="login-logo">${T_.brand}<span class="dot">${T_.brandDot}</span></div>
+        <div class="login-tag">${T_.loginTag}</div>
+
+        <div class="role-pick">
+          <button class="${state.role==='teacher'?'active':''}" onclick="LT.pickRole('teacher')">${T_.roleTeacher}</button>
+          <button class="${state.role==='student'?'active':''}" onclick="LT.pickRole('student')">${T_.roleStudent}</button>
+        </div>
+
+        <button class="google-btn" onclick="LT.googleLogin()" ${state.googleAuthLoading?'disabled':''}>
+          ${GOOGLE_G_SVG}
+          ${state.googleAuthLoading ? T_.connectingGoogle : T_.continueGoogle}
+        </button>
+
+        <div class="login-divider">${T_.orEmail}</div>
+        <input class="login-field" placeholder="${T_.emailPh}" type="email" />
+        <input class="login-field" placeholder="${T_.passwordPh}" type="password" />
+        <button class="login-btn" onclick="LT.emailLogin()">${T_.logIn}</button>
+
+        <div class="login-footnote">${T_.loginFootnote}</div>
+      </div>
+    `;
+  }
+
+  function renderImportModal(){
+    if (!state.showImport) return '';
+    const T_ = t();
+    const rows = state.importEvents.map(ev => `
+      <div class="import-row ${ev.isLesson?'':'skip'}">
+        <div class="import-check ${ev.selected?'checked':''}" onclick="LT.toggleImportEvent(${ev.id})">${ev.selected?'✓':''}</div>
+        <div class="import-mid">
+          <div class="import-title">${ev.title}</div>
+          <div class="import-time">${ev.date} · ${ev.time}</div>
+        </div>
+        <div class="import-tag ${ev.isLesson?'lesson':'other'}">${ev.isLesson?T_.lessonTag:T_.otherTag}</div>
+      </div>
+    `).join('');
+    const count = state.importEvents.filter(e=>e.selected).length;
+    return `
+      <div class="modal-backdrop open" onclick="if(event.target===this) LT.closeImport()">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div class="modal-title">${T_.importTitle}</div>
+          <div class="modal-sub">${T_.importSub}</div>
+          <div class="import-list">${rows}</div>
+          <div class="import-btn-row">
+            <button class="modal-btn" style="margin-bottom:0;" onclick="LT.confirmImport()">${T_.importSelected} (${count})</button>
+          </div>
+          <button class="modal-close" onclick="LT.closeImport()">${T_.close}</button>
+        </div>
+      </div>
+    `;
+  }
+  function renderHome(){
+    const T_ = t();
+    const rows = state.lessons.map(l => `
+      <div class="ticket ${l.done?'done':''}">
+        <div class="ticket-main">
+          <div class="stamp-mark ${l.done?'show':''}">${T_.stamped}</div>
+          <div class="ticket-time">${l.time}${l.imported ? `<span class="import-badge">${T_.imported}</span>` : ''}${l.loggedNow ? `<span class="logged-badge">${T_.loggedBadge}</span>` : ''}</div>
+          <div class="ticket-name">${state.lang==='zh'?l.nameZh:l.name}</div>
+          <div class="ticket-course">${l.icon} ${state.lang==='zh'?l.courseZh:l.course}</div>
+          <div class="ticket-remaining">${T_.remaining} <b>${l.remaining}</b></div>
+          <div class="cal-mini-row">
+            <button class="cal-mini" onclick='event.stopPropagation(); LT.addGoogle("${(state.lang==='zh'?l.courseZh:l.course)} — ${l.name}", "Aug 1", "${l.time}")'><span class="dot-g">●</span>${T_.addGoogle}</button>
+            <button class="cal-mini" onclick='event.stopPropagation(); LT.addApple("${(state.lang==='zh'?l.courseZh:l.course)} — ${l.name}", "Aug 1", "${l.time}")'><span class="dot-a">●</span>${T_.addApple}</button>
+          </div>
+        </div>
+        <div class="ticket-perf"></div>
+        <div class="ticket-action">
+          <button class="stamp-btn" onclick="LT.complete(${l.id})" ${l.done?'disabled':''} style="white-space:pre-line;${l.done?'opacity:0.35;cursor:default;':''}">${l.done? '✓' : T_.complete}</button>
+        </div>
+      </div>
+    `).join('');
+    const allDone = state.lessons.every(l=>l.done);
+    return `
+      <div class="section-label">${T_.today} · Aug 1</div>
+      ${rows}
+      ${allDone ? `<div class="empty-note">${T_.noneLeft}</div>` : ''}
+    `;
+  }
+
+  function renderStudents(){
+    const T_ = t();
+    const rows = state.students.map(s => `
+      <div class="student-row" onclick='LT.openStudent(${s.id})'>
+        <div class="avatar">${s.name[0]}</div>
+        <div class="student-info">
+          <div class="student-name">${s.name}</div>
+          <div class="student-courses">
+            ${s.courses.map(c=>`<span class="pill" onclick='event.stopPropagation(); LT.openCourse(${s.id}, "${c.c}")'>${state.lang==='zh'?c.cZh:c.c} · ${c.left}</span>`).join('')}
+          </div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    `).join('');
+    return `<div class="section-label">${T_.studentsLabel}</div>${rows}`;
+  }
+
+  function renderHistory(){
+    const T_ = t();
+    const rows = state.history.map(h => `
+      <div class="hist-row">
+        <div class="hist-date">${h.date}</div>
+        <div class="hist-mid">
+          <div class="hist-name">${h.name}</div>
+          <div class="hist-course">${state.lang==='zh'?h.courseZh:h.course}</div>
+        </div>
+        <div class="hist-badge">${T_.completedTag}</div>
+      </div>
+    `).join('');
+    return `<div class="section-label">${T_.historyLabel}</div>${rows}`;
+  }
+
+  function currentStudent(){
+    return state.students.find(s => s.id === state.currentStudentId) || state.students[0];
+  }
+
+  const iconFor = { Tennis:'🎾', Piano:'🎹', Swimming:'🏊', Math:'📐', Fitness:'🏋️' };
+
+  function renderStudentHome(){
+    const T_ = t();
+    const s = currentStudent();
+    const cards = s.courses.map(c => `
+      <div class="credit-card">
+        <div class="credit-icon">${iconFor[c.c] || '📘'}</div>
+        <div class="credit-mid">
+          <div class="credit-course">${state.lang==='zh'?c.cZh:c.c}</div>
+          <div class="credit-teacher">Coach John</div>
+        </div>
+        <div class="credit-count"><b>${c.left}</b><span>${T_.remainingUnit}</span></div>
+      </div>
+    `).join('');
+    return `
+      <div class="hello">${T_.hello}<span>${s.name}</span></div>
+      <div class="section-label">${T_.lessonsLabel}</div>
+      ${cards}
+    `;
+  }
+
+  function renderStudentLessons(){
+    const T_ = t();
+    const rows = state.upcoming.map(u => `
+      <div class="upcoming-row">
+        <div class="upcoming-date">${u.date}<br/>${u.time}</div>
+        <div class="upcoming-mid">
+          <div class="upcoming-course">${u.icon} ${state.lang==='zh'?u.courseZh:u.course}</div>
+          <div class="upcoming-teacher">${u.teacher}</div>
+          <div class="cal-mini-row">
+            <button class="cal-mini" onclick='LT.addGoogle("${(state.lang==='zh'?u.courseZh:u.course)} — ${u.teacher}", "${u.date}", "${u.time}")'><span class="dot-g">●</span>${T_.addGoogle}</button>
+            <button class="cal-mini" onclick='LT.addApple("${(state.lang==='zh'?u.courseZh:u.course)} — ${u.teacher}", "${u.date}", "${u.time}")'><span class="dot-a">●</span>${T_.addApple}</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    return `<div class="section-label">${T_.upcomingLabel}</div>${rows}`;
+  }
+
+  function renderStudentHistory(){
+    const T_ = t();
+    const s = currentStudent();
+    const rows = state.history.filter(h => h.name === s.name).map(h => `
+      <div class="hist-row">
+        <div class="hist-date">${h.date}</div>
+        <div class="hist-mid">
+          <div class="hist-name">${state.lang==='zh'?h.courseZh:h.course}</div>
+          <div class="hist-course">Coach John</div>
+        </div>
+        <div class="hist-badge">${T_.completedTag}</div>
+      </div>
+    `).join('');
+    return `<div class="section-label">${T_.myHistoryLabel}</div>${rows || `<div class="empty-note">—</div>`}`;
+  }
+
+  function renderProfile(){
+    const T_ = t();
+    const isTeacher = state.role === 'teacher';
+    const name = isTeacher ? T_.role_teacher_name : T_.role_student_name;
+    const roleLabel = isTeacher ? T_.roleTeacher : T_.roleStudent;
+    const g = state.sync.google, a = state.sync.apple;
+    return `
+      <div class="profile-header">
+        <div class="profile-avatar">${name[0]}</div>
+        <div>
+          <div class="profile-name">${name}</div>
+          <div class="profile-role">${roleLabel}</div>
+        </div>
+      </div>
+      <div class="section-label">${T_.calendarSync}</div>
+      <div class="sync-card">
+        <div class="sync-row">
+          <div class="sync-icon">📅</div>
+          <div class="sync-mid">
+            <div class="sync-name">${T_.google}</div>
+            <div class="sync-status ${g?'on':'off'}">${g?T_.connected:T_.notConnected}</div>
+          </div>
+          <button class="connect-btn ${g?'on':''}" onclick="LT.toggleSync('google')">${g?T_.disconnect:T_.connect}</button>
+        </div>
+        <div class="sync-row">
+          <div class="sync-icon">🍎</div>
+          <div class="sync-mid">
+            <div class="sync-name">${T_.apple}</div>
+            <div class="sync-status ${a?'on':'off'}">${a?T_.connected:T_.notConnected}</div>
+          </div>
+          <button class="connect-btn ${a?'on':''}" onclick="LT.toggleSync('apple')">${a?T_.disconnect:T_.connect}</button>
+        </div>
+      </div>
+      <div class="sync-note">${T_.syncNote}</div>
+      ${g ? `<button class="sync-link" onclick="LT.openImport()">📥 ${T_.importBtn}</button>` : ''}
+      <button class="modal-close" style="margin-top:10px;" onclick="LT.logout()">${T_.logOut}</button>
+    `;
+  }
+
+  function renderLogSheet(){
+    if (!state.showLog) return '';
+    const T_ = t();
+    let inner = '';
+
+    if (state.logStep === 'student') {
+      const rows = state.students.map(s => `
+        <div class="log-pick-row" onclick="LT.pickLogStudent(${s.id})">
+          <div class="avatar">${s.name[0]}</div>
+          <div>
+            <div class="log-pick-name">${s.name}</div>
+            <div class="log-pick-sub">${s.courses.map(c=>state.lang==='zh'?c.cZh:c.c).join(' · ')}</div>
+          </div>
+        </div>
+      `).join('');
+      inner = `
+        <div class="log-step-title">${T_.logStep1Title}</div>
+        <div class="log-step-sub">${T_.logStep1Sub}</div>
+        <div class="log-pick-list">${rows}</div>
+      `;
+    } else if (state.logStep === 'course') {
+      const s = state.students.find(s => s.id === state.logStudentId);
+      const chips = (s ? s.courses : []).map(c => `
+        <div class="log-course-chip" onclick="LT.pickLogCourse('${c.c}')">
+          <span>${state.lang==='zh'?c.cZh:c.c}</span>
+          <span class="left-count">${c.left} ${T_.leftUnit}</span>
+        </div>
+      `).join('');
+      inner = `
+        <button class="log-back" onclick="LT.backLogStep()">‹ ${T_.back}</button>
+        <div class="log-step-title">${T_.logStep2Title}</div>
+        <div class="log-step-sub">${s ? s.name : ''} — ${T_.logStep2Sub}</div>
+        ${chips}
+      `;
+    } else {
+      const s = state.students.find(s => s.id === state.logStudentId);
+      const c = s && s.courses.find(c => c.c === state.logCourseName);
+      inner = `
+        <button class="log-back" onclick="LT.backLogStep()">‹ ${T_.back}</button>
+        <div class="log-step-title">${T_.logStep3Title}</div>
+        <div class="log-summary">
+          <div class="log-summary-name">${s ? s.name : ''}</div>
+          <div class="log-summary-course">${state.lang==='zh'&&c?c.cZh:(c?c.c:'')} · ${c?c.left:0} → ${c?Math.max(0,c.left-1):0} ${T_.leftUnit}</div>
+        </div>
+        <button class="modal-btn" onclick="LT.confirmLog()">${T_.logConfirmBtn}</button>
+      `;
+    }
+
+    return `
+      <div class="modal-backdrop open" onclick="if(event.target===this) LT.closeLog()">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          ${inner}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderModal(){
+    if (!state.modalCourse) return `<div class="modal-backdrop" onclick="LT.closeModal()"></div>`;
+    const T_ = t();
+    const c = state.modalCourse;
+    const label = state.lang==='zh' ? c.cZh : c.c;
+    return `
+      <div class="modal-backdrop open" onclick="if(event.target===this) LT.closeModal()">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <div class="modal-title">${label}</div>
+          <div class="modal-sub">${c.studentName}</div>
+          <div class="modal-stats">
+            <div class="stat"><b>${c.purchased}</b><span>${T_.purchased}</span></div>
+            <div class="stat"><b>${c.used}</b><span>${T_.used}</span></div>
+            <div class="stat"><b>${c.left}</b><span>${T_.left}</span></div>
+          </div>
+          <button class="modal-btn" onclick="LT.takeLesson()">${T_.take}</button>
+          <button class="modal-close" onclick="LT.closeModal()">${T_.close}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const T_ = t();
+    const root = document.getElementById('app-root');
+
+    if (!state.loggedIn) {
+      root.innerHTML = `
+        <div class="phone">
+          <div class="screen">${renderLogin()}</div>
+        </div>
+      `;
+      return;
+    }
+
+    const isTeacher = state.role === 'teacher';
+
+    let body = '';
+    if (isTeacher) {
+      if (state.tab === 'home') body = renderHome();
+      else if (state.tab === 'students') body = renderStudents();
+      else if (state.tab === 'history') body = renderHistory();
+      else body = renderProfile();
+    } else {
+      if (state.studentTab === 'home') body = renderStudentHome();
+      else if (state.studentTab === 'lessons') body = renderStudentLessons();
+      else if (state.studentTab === 'history') body = renderStudentHistory();
+      else body = renderProfile();
+    }
+
+    const teacherTabs = `
+      <div class="tab ${state.tab==='home'?'active':''}" onclick="LT.setTab('home')">
+        <span class="tab-icon">🎫</span><span class="tab-label">${T_.home}</span>
+      </div>
+      <div class="tab ${state.tab==='students'?'active':''}" onclick="LT.setTab('students')">
+        <span class="tab-icon">👥</span><span class="tab-label">${T_.students}</span>
+      </div>
+      <div class="tab ${state.tab==='history'?'active':''}" onclick="LT.setTab('history')">
+        <span class="tab-icon">📖</span><span class="tab-label">${T_.history}</span>
+      </div>
+      <div class="tab ${state.tab==='profile'?'active':''}" onclick="LT.setTab('profile')">
+        <span class="tab-icon">⚙️</span><span class="tab-label">${T_.profile}</span>
+      </div>
+    `;
+    const studentTabs = `
+      <div class="tab ${state.studentTab==='home'?'active':''}" onclick="LT.setStudentTab('home')">
+        <span class="tab-icon">💳</span><span class="tab-label">${T_.home}</span>
+      </div>
+      <div class="tab ${state.studentTab==='lessons'?'active':''}" onclick="LT.setStudentTab('lessons')">
+        <span class="tab-icon">🗓️</span><span class="tab-label">${T_.lessonsTab}</span>
+      </div>
+      <div class="tab ${state.studentTab==='history'?'active':''}" onclick="LT.setStudentTab('history')">
+        <span class="tab-icon">📖</span><span class="tab-label">${T_.history}</span>
+      </div>
+      <div class="tab ${state.studentTab==='profile'?'active':''}" onclick="LT.setStudentTab('profile')">
+        <span class="tab-icon">⚙️</span><span class="tab-label">${T_.profile}</span>
+      </div>
+    `;
+
+    root.innerHTML = `
+      <div class="phone">
+        <div class="screen">
+          <div class="topbar">
+            <div class="word">${T_.brand}<span class="dot">${T_.brandDot}</span></div>
+            <div class="lang-toggle">
+              <button class="${state.lang==='en'?'active':''}" onclick="LT.setLang('en')">EN</button>
+              <button class="${state.lang==='zh'?'active':''}" onclick="LT.setLang('zh')">中文</button>
+            </div>
+          </div>
+          <div class="role-toggle">
+            <button class="${isTeacher?'active':''}" onclick="LT.setRole('teacher')"><span class="role-dot"></span>${T_.roleTeacher}</button>
+            <button class="${!isTeacher?'active':''}" onclick="LT.setRole('student')"><span class="role-dot"></span>${T_.roleStudent}</button>
+          </div>
+          <div class="subline">${isTeacher ? T_.subTeacher : T_.subStudent}</div>
+          <div class="content">${body}</div>
+          ${isTeacher ? `<button class="fab" onclick="LT.openLog()" title="${T_.logLessonTitle}">+</button>` : ''}
+          <div class="tabbar">
+            ${isTeacher ? teacherTabs : studentTabs}
+          </div>
+          ${isTeacher ? renderModal() : ''}
+          ${isTeacher ? renderLogSheet() : ''}
+          ${renderImportModal()}
+        </div>
+      </div>
+    `;
+  }
+
+  window.LT = {
+    setLang: (l) => { state.lang = l; render(); },
+    setTab: (tb) => { state.tab = tb; render(); },
+    setStudentTab: (tb) => { state.studentTab = tb; render(); },
+    setRole: (r) => { state.role = r; render(); },
+    complete: completeLesson,
+    openStudent: (id) => {
+      const s = state.students.find(s=>s.id===id);
+      if (s && s.courses[0]) openCourse(s.name, s.courses[0]);
+    },
+    openCourse: (studentId, courseName) => {
+      const s = state.students.find(s=>s.id===studentId);
+      if (!s) return;
+      const c = s.courses.find(c=>c.c===courseName);
+      if (c) openCourse(s.name, c);
+    },
+    closeModal,
+    takeLesson,
+    toggleSync: (provider) => { state.sync[provider] = !state.sync[provider]; render(); },
+    addGoogle: (title, date, time) => addToGoogleCalendar(title, date, time, 'via LessonTap'),
+    addApple: (title, date, time) => addToAppleCalendar(title, date, time, 'via LessonTap'),
+    pickRole: (r) => { state.role = r; render(); },
+    googleLogin: () => {
+      state.googleAuthLoading = true;
+      render();
+      setTimeout(() => {
+        state.googleAuthLoading = false;
+        state.loggedIn = true;
+        state.sync.google = true; // signing in with Google naturally links the calendar
+        render();
+      }, 900);
+    },
+    emailLogin: () => { state.loggedIn = true; render(); },
+    logout: () => { state.loggedIn = false; state.tab = 'home'; state.studentTab = 'home'; render(); },
+    openImport: () => { state.showImport = true; render(); },
+    closeImport: () => { state.showImport = false; render(); },
+    toggleImportEvent: (id) => {
+      const ev = state.importEvents.find(e => e.id === id);
+      if (ev) ev.selected = !ev.selected;
+      render();
+    },
+    confirmImport: () => {
+      const toImport = state.importEvents.filter(e => e.selected && e.isLesson);
+      toImport.forEach(ev => {
+        const [name, course] = ev.title.split(' - ').map(s => s.trim());
+        if (!name || !course) return;
+        const already = state.lessons.some(l => l.name === name && l.course === course && l.time === ev.time);
+        if (already) return;
+        const student = state.students.find(s => s.name === name);
+        const match = student && student.courses.find(c => c.c === course);
+        state.lessons.push({
+          id: Date.now() + Math.random(),
+          time: ev.time, name, nameZh: name,
+          course, courseZh: (match && match.cZh) || course,
+          icon: iconFor[course] || '📘',
+          remaining: match ? match.left : 10,
+          done: false,
+          imported: true,
+        });
+      });
+      state.lessons.sort((a,b) => a.time.localeCompare(b.time));
+      state.showImport = false;
+      state.tab = 'home';
+      render();
+    },
+    openLog: () => { state.showLog = true; state.logStep = 'student'; state.logStudentId = null; state.logCourseName = null; render(); },
+    closeLog: () => { state.showLog = false; render(); },
+    backLogStep: () => {
+      state.logStep = state.logStep === 'course' ? 'student' : 'course';
+      render();
+    },
+    pickLogStudent: (id) => { state.logStudentId = id; state.logStep = 'course'; render(); },
+    pickLogCourse: (courseName) => { state.logCourseName = courseName; state.logStep = 'confirm'; render(); },
+    confirmLog: () => {
+      const s = state.students.find(s => s.id === state.logStudentId);
+      const c = s && s.courses.find(c => c.c === state.logCourseName);
+      if (!s || !c) return;
+      c.left = Math.max(0, c.left - 1);
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      state.lessons.push({
+        id: Date.now() + Math.random(),
+        time: `${hh}:${mm}`, name: s.name, nameZh: s.name,
+        course: c.c, courseZh: c.cZh,
+        icon: iconFor[c.c] || '📘',
+        remaining: c.left,
+        done: true,
+        loggedNow: true,
+      });
+      state.history.unshift({ date: 'Aug 1', name: s.name, course: c.c, courseZh: c.cZh });
+      state.lessons.sort((a,b) => a.time.localeCompare(b.time));
+      state.showLog = false;
+      state.tab = 'home';
+      render();
+    },
+  };
+
+  render();
+})();
+</script>

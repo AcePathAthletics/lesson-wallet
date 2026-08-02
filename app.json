@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Lesson Wallet",
+    "slug": "lesson-wallet",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "lessonwallet",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#14261D",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.lessonwallet",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "Lesson Wallet adds your lessons to your calendar."
+      }
+    },
+    "android": {
+      "package": "app.lessonwallet",
+      "permissions": [
+        "READ_CALENDAR",
+        "WRITE_CALENDAR"
+      ]
+    },
+    "plugins": [
+      "expo-calendar",
+      "expo-notifications",
+      "expo-localization"
+    ],
+    "extra": {
+      "supportedLocales": [
+        "en",
+        "zh"
+      ]
+    }
+  }
+}
