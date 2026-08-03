@@ -7,13 +7,17 @@
  */
 
 import 'react-native-url-polyfill/auto';
+import { Platform } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+  // Web needs the OAuth redirect token parsed out of the URL; native gets
+  // the session via the deep-link handler instead, so this must not be a
+  // flat `false` or Google/email-link sign-in silently no-ops on web.
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: Platform.OS === 'web' },
 });
 
 /* ------------------------------ auth ------------------------------ */
