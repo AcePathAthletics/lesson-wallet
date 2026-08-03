@@ -27,10 +27,17 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
  * Calendar permission is requested separately in connectGoogleCalendar()
  * so the login prompt stays minimal (spec §6.2).
  */
+// Supabase falls back to the dashboard's Site URL when redirectTo is
+// omitted — on web that must be wherever this page is actually served,
+// not whatever the Site URL happens to be set to (e.g. localhost).
+function defaultRedirectTo() {
+  return Platform.OS === 'web' ? window.location.origin + window.location.pathname : undefined;
+}
+
 export async function signInWithGoogle(redirectTo) {
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { scopes: 'openid email profile', redirectTo },
+    options: { scopes: 'openid email profile', redirectTo: redirectTo ?? defaultRedirectTo() },
   });
 }
 
@@ -174,7 +181,7 @@ export async function connectGoogleCalendar(redirectTo) {
     options: {
       scopes: 'https://www.googleapis.com/auth/calendar.events',
       queryParams: { access_type: 'offline', prompt: 'consent' },
-      redirectTo,
+      redirectTo: redirectTo ?? defaultRedirectTo(),
     },
   });
 }
