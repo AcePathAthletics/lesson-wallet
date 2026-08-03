@@ -34,6 +34,9 @@
         "en",
         "zh"
       ]
+    },
+    "experiments": {
+      "baseUrl": "/lesson-wallet"
     }
   }
 }
