@@ -838,7 +838,7 @@
       emailPh: "Email address",
       passwordPh: "Password",
       logIn: "Log In",
-      loginFootnote: "By continuing you agree to LessonTap's Terms.",
+      loginFootnote: "By continuing you agree to Lesson Wallet's Terms.",
       chooseRole: "I am a…",
       importBtn: "Import Lessons from Calendar",
       importTitle: "Import from Google Calendar",
@@ -896,7 +896,7 @@
       emailPh: "邮箱地址",
       passwordPh: "密码",
       logIn: "登录",
-      loginFootnote: "继续即表示你同意 LessonTap 的服务条款。",
+      loginFootnote: "继续即表示你同意 Lesson Wallet 的服务条款。",
       chooseRole: "我的身份是…",
       importBtn: "从日历导入课程",
       importTitle: "从 Google 日历导入",
@@ -1019,7 +1019,7 @@
     const end = new Date(start.getTime() + 60*60*1000);
     const ics = [
       'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//LessonWallet//EN','BEGIN:VEVENT',
-      'UID:' + Date.now() + '@lessontap',
+      'UID:' + Date.now() + '@lessonwallet.app',
       'DTSTAMP:' + fmtStamp(new Date()),
       'DTSTART:' + fmtStamp(start),
       'DTEND:' + fmtStamp(end),
@@ -1441,8 +1441,8 @@
     closeModal,
     takeLesson,
     toggleSync: (provider) => { state.sync[provider] = !state.sync[provider]; render(); },
-    addGoogle: (title, date, time) => addToGoogleCalendar(title, date, time, 'via LessonTap'),
-    addApple: (title, date, time) => addToAppleCalendar(title, date, time, 'via LessonTap'),
+    addGoogle: (title, date, time) => addToGoogleCalendar(title, date, time, 'via Lesson Wallet'),
+    addApple: (title, date, time) => addToAppleCalendar(title, date, time, 'via Lesson Wallet'),
     pickRole: (r) => { state.role = r; render(); },
     googleLogin: () => {
       state.googleAuthLoading = true;

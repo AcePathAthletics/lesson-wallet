@@ -15,8 +15,11 @@
     "build:web": "expo export --platform web",
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
-    "test:db": "node --test tests/db/*.db.test.js",
-    "test:all": "npm test && npm run test:db"
+    "test:db": "node --test --test-concurrency=1 tests/db/*.db.test.js",
+    "test:all": "npm test && npm run test:db",
+    "verify": "node scripts/verify.mjs",
+    "verify:fast": "node scripts/verify.mjs --skip-faults",
+    "check": "node scripts/checks.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~3.2.3",

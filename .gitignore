@@ -8,3 +8,4 @@ web-build/
 .DS_Store
 supabase/.temp/
 supabase/.branches/
+verify-out/

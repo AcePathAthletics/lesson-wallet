@@ -1,0 +1,16 @@
+{
+  "expectedTests": {
+    "core": 64,
+    "db": 29
+  },
+  "knownGaps": [
+    {
+      "check": "webcal-uses-feed-token",
+      "why": "ProfileScreen links webcal://lessonwallet.app/feed/${user.id}.ics (guessable, not revocable) and no Edge Function serves the feed yet. Needs a product decision on the feed endpoint before it can be fixed."
+    },
+    {
+      "check": "concurrency",
+      "why": "pglite is single-connection: two simultaneous completions of a student's last credit are UNVERIFIED. Needs `supabase start` (real Postgres) with two parallel sessions."
+    }
+  ]
+}

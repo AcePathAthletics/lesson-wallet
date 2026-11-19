@@ -17,3 +17,20 @@ jobs:
       # so CI runs green without an install step.
       - name: Run test suite
         run: npm test
+
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      # All stages, including the seeded-fault run. Never --skip-faults here.
+      - run: npm run verify
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-evidence
+          path: verify-out/
