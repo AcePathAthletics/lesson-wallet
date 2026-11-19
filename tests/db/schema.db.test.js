@@ -1,8 +1,8 @@
 /**
  * Database tests — runs the REAL migrations against a real Postgres engine
- * (pglite: Postgres compiled to WASM, no server required).
+ * (pglite: Postgres compiled to WASM, no server required). Setup lives in
+ * ./harness.js so every DB suite applies migrations the same way.
  *
- *   npm install --save-dev @electric-sql/pglite
  *   npm run test:db
  *
  * What this proves:
@@ -21,79 +21,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { PGlite } from '@electric-sql/pglite';
-
-const MIGRATIONS = [
-  'supabase/migrations/0001_schema.sql',
-  'supabase/migrations/0002_functions.sql',
-  'supabase/migrations/0003_rls.sql',
-  'supabase/migrations/0004_fix_role_trigger.sql',
-];
-
-/** Supabase provides auth.users and auth.uid(); pglite does not. Stub them. */
-const AUTH_SHIM = `
-  create schema if not exists auth;
-  create table auth.users (
-    id uuid primary key,
-    email text,
-    raw_user_meta_data jsonb default '{}'::jsonb,
-    raw_app_meta_data  jsonb default '{}'::jsonb
-  );
-  -- Mirrors Supabase: reads the current request's user id.
-  create or replace function auth.uid() returns uuid
-    language sql stable
-  as $fn$
-    select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
-  $fn$;
-`;
-
-/**
- * pglite (postgres compiled to WASM) does not ship a loadable pgcrypto
- * extension, even though real Postgres/Supabase does. gen_random_uuid() is
- * fine -- that moved into core in PG 13 -- but gen_random_bytes() is
- * genuinely pgcrypto-only, and `create extension pgcrypto` itself fails on
- * pglite ("extension pgcrypto is not available"). The migration installs
- * pgcrypto into an `extensions` schema and calls it schema-qualified
- * (`extensions.gen_random_bytes`), so here we create that same schema and
- * stub just that one function in it, then strip the `create extension` line
- * out of the migration text before executing it (see stripCreateExtension
- * below) since pglite can't run that statement at all.
- */
-const PGCRYPTO_SHIM = `
-  create schema if not exists extensions;
-  create or replace function extensions.gen_random_bytes(len integer) returns bytea
-    language sql volatile
-  as $fn$
-    select decode(string_agg(lpad(to_hex(floor(random() * 256)::int), 2, '0'), ''), 'hex')
-    from generate_series(1, len)
-  $fn$;
-`;
-
-/** pglite has no loadable extensions; skip any `create extension ...;` statement. */
-function stripCreateExtension(sql) {
-  return sql.replace(/^\s*create extension.*?;\s*$/gim, '');
-}
-
-/**
- * PostgREST (what Supabase's API actually runs as) connects as a plain
- * non-superuser `authenticated` role that does not own any table, which is
- * exactly what makes RLS apply to it. pglite's default connection is the
- * `postgres` superuser, which owns every table it just created -- and
- * superusers *and* table owners bypass RLS entirely, by design, regardless
- * of policies. Without a distinct, granted-but-not-owning role to switch
- * into, every RLS test would silently see all rows no matter what the
- * policies say. This mirrors the grants Supabase sets up automatically.
- */
-const ROLE_SHIM = `
-  do $$ begin
-    if not exists (select 1 from pg_roles where rolname = 'authenticated') then
-      create role authenticated nologin noinherit;
-    end if;
-  end $$;
-  grant usage on schema public to authenticated;
-  grant select, insert, update, delete on all tables in schema public to authenticated;
-`;
+import { emptyDb, asUser } from './harness.js';
 
 const IDS = {
   teacher: '11111111-1111-1111-1111-111111111111',
@@ -103,36 +31,9 @@ const IDS = {
 };
 
 async function freshDb() {
-  const db = new PGlite();
-  await db.exec(PGCRYPTO_SHIM);
-  await db.exec(AUTH_SHIM);
-  for (const path of MIGRATIONS) {
-    await db.exec(stripCreateExtension(readFileSync(path, 'utf8')));
-  }
-  await db.exec(ROLE_SHIM);
+  const db = await emptyDb();
   await seed(db);
   return db;
-}
-
-/**
- * Run a block as a specific user, the way PostgREST does per-request.
- *
- * Two things matter here:
- *  - `set role` (not `set local role`): each db.query()/db.exec() call is
- *    its own implicit transaction unless wrapped in BEGIN, and `local`
- *    settings only last for the current transaction. A `local` role set on
- *    one statement would already have reverted by the time the next
- *    statement runs, silently leaving every query on the superuser role.
- *  - `authenticated`, not `postgres`: see ROLE_SHIM above.
- */
-async function asUser(db, userId, fn) {
-  await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [userId]);
-  await db.exec(`set role authenticated;`);
-  try {
-    return await fn();
-  } finally {
-    await db.exec(`reset role;`);
-  }
 }
 
 async function seed(db) {
